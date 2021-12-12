@@ -1,6 +1,8 @@
 on:
-  - push
-  - pull_request
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: [master]
 
 env:
   VERSION_OTP: '24.x'
