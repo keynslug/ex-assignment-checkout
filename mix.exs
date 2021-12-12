@@ -20,7 +20,9 @@ defmodule Checkout.MixProject do
   defp deps do
     [
       {:typed_struct, "~> 0.2"},
-      {:ratio, "~> 3.0"}
+      {:ratio, "~> 3.0"},
+
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 end

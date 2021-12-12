@@ -10,10 +10,9 @@ defmodule Checkout.Cart do
 
   use TypedStruct
 
-  alias Checkout.Product
   alias Checkout.Rule
 
-  @type item() :: Product.t() | Discount.t()
+  @type item() :: Checkout.Product.t() | Checkout.Discount.t()
   @type rule() :: Rule.t()
 
   typedstruct do
@@ -35,7 +34,7 @@ defmodule Checkout.Cart do
   @doc """
   Add a product or a set of them in the cart, evaluating rules in the process.
   """
-  @spec add(t(), Product.t() | [Product.t()]) :: t()
+  @spec add(t(), Checkout.Product.t() | [Checkout.Product.t()]) :: t()
   def add(%Cart{} = cart, products) when is_list(products) do
     Enum.reduce(products, cart, fn p, cart -> add(cart, p) end)
   end

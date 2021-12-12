@@ -7,22 +7,6 @@ defmodule Checkout.Rule do
 
   alias Checkout.Product
 
-  @type discount() :: Discount.t() | bulk_discount()
-  @type bulk_discount() :: {:bulk, Checkout.amount(), Discount.t()}
-
-  typedstruct do
-    @typedoc "Stateful rule for discount evaluation"
-
-    field :name, String.t(), default: "<unnamed>"
-    field :precondition, Condition.t() | nil
-    field :definition, discount(), enforce: true
-    field :postcondition, Condition.t() | nil
-    field :active?, boolean(), default: false
-    field :items, [Checkout.Cart.item()], default: []
-  end
-
-  alias __MODULE__
-
   defmodule Condition do
     @moduledoc """
     Functions to define complex conditions.
@@ -91,24 +75,6 @@ defmodule Checkout.Rule do
     def check({:over, num, counter, inner}, _product) do
       {false, {:over, num, counter + 1, inner}}
     end
-
-  end
-
-  @doc """
-  Construct a named rule given a discount definition.
-  * Narrow down when this rule is _evaluated_ with a `:precondition` option. By default
-    `Checkout.Rule.Condition.any?` is implied here.
-  * Restrict when any discounts produced by this rule become "active" with `:postcondition` option.
-    By default `Checkout.Rule.Condition.any?` is implied here as well.
-  """
-  @spec new(String.t(), discount(), keyword()) :: t()
-  def new(name, definition, opts \\ []) do
-    %Rule{
-      name: name,
-      definition: definition,
-      precondition: opts[:precondition] || Condition.any?,
-      postcondition: opts[:postcondition] || Condition.any?
-    }
   end
 
   defmodule Discount do
@@ -158,7 +124,39 @@ defmodule Checkout.Rule do
     def compute(%Discount{amount: amount}, price) when Ratio.is_rational(amount) do
       Ratio.mult(price <|> 1, amount) |> Ratio.trunc()
     end
+  end
 
+  @type discount() :: Discount.t() | bulk_discount()
+  @type bulk_discount() :: {:bulk, Checkout.amount(), Discount.t()}
+
+  typedstruct do
+    @typedoc "Stateful rule for discount evaluation"
+
+    field :name, String.t(), default: "<unnamed>"
+    field :precondition, Condition.t() | nil
+    field :definition, discount(), enforce: true
+    field :postcondition, Condition.t() | nil
+    field :active?, boolean(), default: false
+    field :items, [Checkout.Cart.item()], default: []
+  end
+
+  alias __MODULE__
+
+  @doc """
+  Construct a named rule given a discount definition.
+  * Narrow down when this rule is _evaluated_ with a `:precondition` option. By default
+    `Checkout.Rule.Condition.any?` is implied here.
+  * Restrict when any discounts produced by this rule become "active" with `:postcondition` option.
+    By default `Checkout.Rule.Condition.any?` is implied here as well.
+  """
+  @spec new(String.t(), discount(), keyword()) :: t()
+  def new(name, definition, opts \\ []) do
+    %Rule{
+      name: name,
+      definition: definition,
+      precondition: opts[:precondition] || Condition.any?,
+      postcondition: opts[:postcondition] || Condition.any?
+    }
   end
 
   @doc """
